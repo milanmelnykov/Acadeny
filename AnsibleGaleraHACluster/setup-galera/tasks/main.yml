@@ -1,0 +1,64 @@
+---
+# tasks file for galera-pre
+
+- name: Generate /etc/hosts from template
+  template:
+    src: ./setup-galera/templates/hosts.j2
+    dest: /etc/hosts
+    mode: '0644'
+
+- name: Copy mariadb repo
+  copy:
+    src: ./setup-galera/files/MariaDB.repo
+    dest: /etc/yum.repos.d/
+    mode: '0644'
+
+- name: Install packages
+  yum: 
+    state: present
+    name:  
+      - mariadb-server
+      - MySQL-python
+      - rsync 
+
+- name: Generate server.cnf from template
+  template:
+    src: ./setup-galera/templates/server.j2
+    dest: /etc/my.cnf.d/server.cnf
+    mode: '0644'
+
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
+- name: Enable firewalld, add needed rules
+  systemd: 
+     name: firewalld 
+     state: started 
+     enabled: yes
+
+- firewalld:
+    port: 3306/tcp
+    permanent: yes
+    state: enabled
+
+- firewalld:
+    port: 4567/tcp
+    permanent: yes
+    state: enabled
+
+- firewalld:
+    port: 873/tcp
+    permanent: yes
+    state: enabled
+
+- firewalld:
+    port: 4444/tcp
+    permanent: yes
+    state: enabled
+ 
+- name: Restart service firewalld
+  systemd:
+        name: firewalld
+        state: restarted

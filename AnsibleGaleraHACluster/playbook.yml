@@ -1,0 +1,54 @@
+- name: Galera cluster basic setup
+  hosts: galera_nodes  
+  tasks:
+    - include_role:
+        name: setup-galera
+        tasks_from: main
+            
+- name: Galera master node job
+  hosts: galera_master 
+  gather_facts: no
+  tasks:
+    - include_role:
+        name: setup-galera
+        tasks_from: galera-master-task
+        
+- hosts: galera_nodes:!galera_master
+  gather_facts: no
+  tasks:
+       - name: Start the other MariaDB Galera cluster nodes
+         systemd: 
+           name: mariadb 
+           state: started
+           
+- name: HAproxy basic setup
+  hosts: haproxy_nodes  
+  tasks:
+    - include_role:
+        name: setup-haproxy
+        tasks_from: main
+      
+- name: HAproxy cluster preparatoins steps
+  hosts: haproxy_nodes 
+  gather_facts: no
+  tasks:
+    - include_role:
+        name: setup-haproxy
+        tasks_from: cluster-preparations
+  
+- name: HAproxy cluster config
+  hosts: haproxy_master 
+  gather_facts: no
+  tasks:
+    - include_role:
+        name: setup-haproxy
+        tasks_from: cluster-config
+
+- name: Reboot proxy nodes to apply some changes
+  hosts: haproxy_nodes
+  gather_facts: no
+  tasks:
+    - reboot:
+        reboot_timeout: 3600
+    - debug:
+        msg: Ready to go!

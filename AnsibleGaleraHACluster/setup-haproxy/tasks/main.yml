@@ -1,0 +1,66 @@
+---
+# tasks file for setup-haproxy
+
+- name: Generate /etc/hosts from template
+  template:
+    src: ./setup-haproxy/templates/hosts.j2
+    dest: /etc/hosts
+    mode: '0644'
+    
+- name: Install haproxy
+  yum:
+    name: haproxy
+
+- name: Generate haproxy.cfg from template
+  template:
+    src: ./setup-haproxy/templates/cnf.j2
+    dest: /etc/haproxy/haproxy.cfg
+    mode: '0644'
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
+- name: Enable firewalld
+  systemd: 
+     name: firewalld 
+     state: started 
+     enabled: yes
+
+- firewalld:
+    service: http
+    permanent: yes
+    state: enabled
+
+- firewalld:
+    service: https
+    permanent: yes
+    state: enabled
+
+- firewalld:
+    service: high-availability
+    permanent: yes
+    state: enabled
+
+- firewalld:
+    port: 3306/tcp
+    permanent: yes
+    state: enabled
+
+- firewalld:
+    port: 1936/tcp
+    permanent: yes
+    state: enabled
+
+
+- name: Restart service firewalld
+  systemd:
+        name: firewalld
+        state: restarted
+
+- name: Start haproxy and enable it on boot
+  systemd:
+        name: haproxy
+        state: restarted  
+        enabled: yes
+ 

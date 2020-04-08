@@ -1,0 +1,35 @@
+- name: Gather galera nodes facts prior to execution
+  hosts: galera_nodes   
+  
+  
+- name: HAproxy basic setup
+  hosts: haproxy_nodes  
+  tasks:
+    - include_role:
+        name: setup-haproxy
+        tasks_from: main
+      
+- name: HAproxy cluster preparatoins steps
+  hosts: haproxy_nodes 
+  gather_facts: no
+  tasks:
+    - include_role:
+        name: setup-haproxy
+        tasks_from: cluster-preparations
+  
+- name: HAproxy cluster config
+  hosts: haproxy_master 
+  gather_facts: no
+  tasks:
+    - include_role:
+        name: setup-haproxy
+        tasks_from: cluster-config
+
+- name: Reboot vms to apply some changes
+  hosts: haproxy_nodes
+  gather_facts: no
+  tasks:
+    - reboot:
+        reboot_timeout: 3600
+    - debug:
+        msg: Ready to go!

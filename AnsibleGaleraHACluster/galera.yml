@@ -1,0 +1,22 @@
+- name: Galera cluster basic setup
+  hosts: galera_nodes  
+  tasks:
+    - include_role:
+        name: setup-galera
+        tasks_from: main
+        
+        
+- name: Galera master node job
+  hosts: galera_master 
+  gather_facts: no
+  tasks:
+    - include_role:
+        name: setup-galera
+        tasks_from: galera-master-task
+        
+- hosts: galera_nodes:!galera_master
+  tasks:
+       - name: Start the other MariaDB Galera cluster nodes
+         systemd: 
+           name: mariadb 
+           state: started

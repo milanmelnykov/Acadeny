@@ -1,0 +1,12 @@
+---
+# defaults file for setup-haproxy
+stat_uname: admin
+stat_pass: password
+lb_type: roundrobin
+limit_connect: 150
+
+hacluster_pass: hacluster
+vip_name: virt_ip_ha
+vip_adress: 192.168.100.13
+vip_adress_mask: 24
+vip_balance: sourceip-sourceport

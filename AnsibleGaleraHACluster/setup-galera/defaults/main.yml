@@ -1,0 +1,13 @@
+---
+# defaults file for galera-pre
+
+cluster_name: galera_cluster
+
+main_db: lv316oms
+test_db: lv316oms_test
+
+main_user_name: oms_user
+main_user_pass: pass
+
+test_user_name: oms_user_test
+test_user_pass: pass

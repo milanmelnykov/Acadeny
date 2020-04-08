@@ -1,0 +1,43 @@
+- name: Cluster auth
+  shell: pcs cluster auth proxy1 proxy2 -u hacluster -phacluster --force
+  register: step1
+- debug:   msg="{{ step1.stdout }}"
+      
+- name: Cluster setup
+  shell: pcs cluster setup --force --name ClusterHA proxy1 proxy2
+  register: step2
+- debug:   msg="{{ step2.stdout }}"
+      
+- name: Cluster start
+  shell: pcs cluster start --all
+  register: step3
+- debug:   msg="{{ step3.stdout }}"
+    
+- name: Cluster enable
+  shell: pcs cluster enable --all
+  register: step4
+- debug:   msg="{{ step4.stdout }}"      
+      
+      
+- name: Cluster status
+  shell: pcs cluster status
+  register: step5
+- debug:   msg="{{ step5.stdout }}" 
+    
+- name: Set ignore
+  shell: pcs property set no-quorum-policy=ignore
+    
+- name: Set false
+  shell: pcs property set stonith-enabled=false
+  
+- name: Create VIP
+  shell: pcs resource create {{ vip_name }} ocf:heartbeat:IPaddr2 ip={{ vip_adress }} cidr_netmask={{ vip_adress_mask }} clusterip_hash={{ vip_balance }} op monitor interval=10s
+  
+- name: Clone VIP
+  shell: pcs resource clone {{ vip_name }}
+
+- name: Create haproxy monitoring resource
+  shell: pcs resource create haproxy ocf:heartbeat:haproxy op monitor interval=10s
+  
+- name: Clone  haproxy monitoring resource
+  shell: pcs resource clone haproxy

@@ -1,0 +1,68 @@
+#---------------------------------------------------------------------
+
+# Global settings
+
+#---------------------------------------------------------------------
+
+global
+
+    log         127.0.0.1 local2
+    chroot	/var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group	haproxy
+    daemon
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+defaults
+    mode                    tcp
+    log                     global
+    option                  dontlognull
+    option                  redispatch
+    retries                 3
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout check           10s
+
+#---------------------------------------------------------------------
+
+# main frontend which proxys to the backends
+
+#---------------------------------------------------------------------
+
+frontend  cluster_entry {{ vip_adress }}:3306
+
+    bind {{ vip_adress }}:3306
+    default_backend             galera
+
+
+backend galera
+
+    balance {{ lb_type }}
+    mode tcp
+    option tcpka
+    option mysql-check user haproxy
+    {% for i in groups['galera_nodes'] %}
+server  db{{loop.index0}} {{ hostvars[i]['ansible_default_ipv4']['address'] }}:3306 maxconn {{ limit_connect }} check
+    {% endfor %}
+    
+listen  stats {{ vip_adress }}:1936
+        mode            http
+        log             global
+
+        maxconn 10
+
+        clitimeout	100s
+        srvtimeout	100s
+        contimeout	100s
+        timeout queue   100s
+
+        stats enable
+        stats hide-version
+        stats refresh 30s
+        stats show-node
+        stats auth {{ stat_uname }}:{{ stat_pass }}
+        stats uri  /haproxy?stats

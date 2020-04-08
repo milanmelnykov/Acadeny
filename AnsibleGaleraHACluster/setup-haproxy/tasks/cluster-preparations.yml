@@ -1,0 +1,33 @@
+- name: Install cluster-needed packages
+  yum:
+    state: present
+    name:
+      - pcs
+      - pacemaker
+      - corosync
+
+- name: Enable pcsd   
+  systemd:
+     name: pcsd
+     state: started
+     enabled: yes
+
+
+- name: Copy file for binding VIP
+  template:
+    src: ./setup-haproxy/files/haproxy.conf
+    dest: /etc/sysctl.d/haproxy.conf
+    mode: '0644'
+
+
+- name: Download haproxy ocf
+  get_url:
+    url: https://raw.githubusercontent.com/thisismitch/cluster-agents/master/haproxy
+    dest: /usr/lib/ocf/resource.d/heartbeat
+    mode: '755'
+            
+- name: Set password for cluster
+  shell: echo {{ hacluster_pass }} | passwd --stdin hacluster 
+  register: st
+  
+- debug:   msg="{{ st.stdout }}" 
