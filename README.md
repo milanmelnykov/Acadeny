@@ -30,7 +30,7 @@ Also it is a good practice to implement **a connetion pooling pattern** for your
   
   [haproxy-nodes]
   proxy1 1.1.1.4
-  proxy2 1.1.1.4
+  proxy2 1.1.1.5
   ...
 
   [haproxy-master]
