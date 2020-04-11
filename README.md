@@ -17,12 +17,13 @@ Also it is a good practice to implement **a connetion pooling pattern** for your
 ## Prerequisites
 - Each node has to be run under *CentOS 7* and higher.
 - Beware that some commands perfomed here have to be executed under *sudo*, so provide Ansible to have that kind of access.
-- Content of *hosts* file should look like this:  
+- Good part of this playbook that it can actually configure as many nodes per cluster as you wish (not only the number you see in my       setup), just add other desired IP adresses to *hosts* file.  
   ```
   [galera-nodes]
   node1 1.1.1.1
   node2 1.1.1.2
   node3 1.1.1.3
+  ...
   
   [galera-master]
   node1 1.1.1.1
@@ -30,9 +31,9 @@ Also it is a good practice to implement **a connetion pooling pattern** for your
   [haproxy-nodes]
   proxy1 1.1.1.4
   proxy2 1.1.1.4
+  ...
 
   [haproxy-master]
   proxy1 1.1.1.4
   ```
-  Good part of this playbook that it can actually configure as many nodes per cluster as you wish (not only the number you see in my       setup), just add other desired IP adresses to *hosts* file.
 - Check whether virtual IP address set in *defaults* is free and fits your subnet. 
